@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sales Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <h1>Sales dashboard</h1>
+            <p class="sub" id="subtitle">Track revenue, order trends, and customer performance in one place.</p>
+    </div>
+  </header>
+
+  <!-- Filters: one row above everything they scope -->
+  <section class="filters" aria-label="Filters">
+    <div class="f-group f-date">
+      <label class="f-label" for="f-preset">Date range</label>
+      <div class="f-date-row">
+        <select id="f-preset" aria-label="Date preset"></select>
+        <input type="date" id="f-start" aria-label="Start date">
+        <span class="muted">to</span>
+        <input type="date" id="f-end" aria-label="End date">
+      </div>
+    </div>
+    <div class="f-group" data-filter="category"><span class="f-label">Category</span></div>
+    <div class="f-group" data-filter="segment"><span class="f-label">Segment</span></div>
+    <div class="f-group" data-filter="city"><span class="f-label">City</span></div>
+    <div class="f-group" data-filter="status"><span class="f-label">Order status</span></div>
+    <button type="button" class="btn-ghost" id="f-reset">Reset filters</button>
+  </section>
+  <div class="chips" id="chips" aria-live="polite"></div>
+
+  <main id="main">
+    <!-- KPI row -->
+    <section class="kpis" aria-label="Key metrics">
+      <article class="card hero">
+        <h2 class="k-label">Total net revenue</h2>
+        <div class="k-hero" id="k-revenue">–</div>
+        <p class="k-note" id="k-revenue-note"></p>
+      </article>
+      <article class="card tile">
+        <h2 class="k-label">Total orders</h2>
+        <div class="k-value" id="k-orders">–</div>
+        <p class="k-note" id="k-orders-note"></p>
+      </article>
+      <article class="card tile">
+        <h2 class="k-label">Unique customers</h2>
+        <div class="k-value" id="k-customers">–</div>
+        <p class="k-note">with at least one order in view</p>
+      </article>
+      <article class="card tile">
+        <h2 class="k-label">Average order value</h2>
+        <div class="k-value" id="k-aov">–</div>
+        <p class="k-note" id="k-aov-note"></p>
+      </article>
+      <article class="card tile">
+        <h2 class="k-label">Returned orders</h2>
+        <div class="k-value" id="k-returned">–</div>
+        <p class="k-note" id="k-returned-note"></p>
+      </article>
+      <article class="card tile">
+        <h2 class="k-label">Repeat customers</h2>
+        <div class="k-value" id="k-repeat">–</div>
+        <p class="k-note" id="k-repeat-note"></p>
+      </article>
+    </section>
+
+    <!-- Charts -->
+    <section class="grid">
+      <article class="card chart-card span-8" data-card="monthly">
+        <header class="c-head">
+          <div><h2>Monthly net revenue</h2><p class="c-sub">Net_Amount_INR by order month</p></div>
+          <div class="c-tools"></div>
+        </header>
+        <div class="c-body"><div class="c-canvas h-280"><canvas id="ch-monthly" role="img" aria-label="Monthly net revenue line chart"></canvas></div></div>
+      </article>
+
+      <article class="card chart-card span-4" data-card="status">
+        <header class="c-head">
+          <div><h2>Orders by status</h2><p class="c-sub">Click a bar to filter</p></div>
+          <div class="c-tools"></div>
+        </header>
+        <div class="c-body"><div class="c-canvas h-280"><canvas id="ch-status" role="img" aria-label="Order count by status bar chart"></canvas></div></div>
+      </article>
+
+      <article class="card chart-card span-4" data-card="category">
+        <header class="c-head">
+          <div><h2>Revenue by category</h2><p class="c-sub">Click a bar to filter</p></div>
+          <div class="c-tools"></div>
+        </header>
+        <div class="c-body"><div class="c-canvas h-240"><canvas id="ch-category" role="img" aria-label="Net revenue by product category bar chart"></canvas></div></div>
+      </article>
+
+      <article class="card chart-card span-4" data-card="customer">
+        <header class="c-head">
+          <div>
+            <h2>Revenue by <span id="cust-dim-label">segment</span></h2>
+            <div class="seg-toggle" role="group" aria-label="Group revenue by">
+              <button type="button" data-dim="segment" aria-pressed="true">Segment</button>
+              <button type="button" data-dim="city" aria-pressed="false">City</button>
+            </div>
+          </div>
+          <div class="c-tools"></div>
+        </header>
+        <div class="c-body"><div class="c-canvas h-240"><canvas id="ch-customer" role="img" aria-label="Net revenue by customer segment or city bar chart"></canvas></div></div>
+      </article>
+
+      <article class="card chart-card span-4" data-card="products">
+        <header class="c-head">
+          <div><h2>Top five products</h2><p class="c-sub">By net revenue</p></div>
+          <div class="c-tools"></div>
+        </header>
+        <div class="c-body"><div class="c-canvas h-240"><canvas id="ch-products" role="img" aria-label="Top five products by net revenue bar chart"></canvas></div></div>
+      </article>
+
+      <article class="card span-12" data-card="returns">
+        <header class="c-head">
+          <div><h2>Returned orders <span class="count" id="returns-count"></span></h2>
+            <p class="c-sub">Returned orders stay in revenue; they are listed here so they can be reviewed</p></div>
+        </header>
+        <div class="table-wrap" id="returns-table"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="foot" id="footer"></footer>
+</div>
+
+<div class="tooltip" id="tooltip" role="status" hidden></div>
+
+<script src="vendor/chart.umd.min.js"></script>
+<script src="local-engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
